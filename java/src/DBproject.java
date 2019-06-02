@@ -31,275 +31,275 @@ import java.util.ArrayList;
  */
 
 public class DBproject{
-	//reference to physical database connection
-	private Connection _connection = null;
-	static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-	
-	public DBproject(String dbname, String dbport, String user, String passwd) throws SQLException {
-		System.out.print("Connecting to database...");
-		try{
-			// constructs the connection URL
-			String url = "jdbc:postgresql://localhost:" + dbport + "/" + dbname;
-			System.out.println ("Connection URL: " + url + "\n");
-			
-			// obtain a physical connection
-	        this._connection = DriverManager.getConnection(url, user, passwd);
-	        System.out.println("Done");
-		}catch(Exception e){
-			System.err.println("Error - Unable to Connect to Database: " + e.getMessage());
-	        System.out.println("Make sure you started postgres on this machine");
-	        System.exit(-1);
-		}
-	}
-	
-	/**
-	 * Method to execute an update SQL statement.  Update SQL instructions
-	 * includes CREATE, INSERT, UPDATE, DELETE, and DROP.
-	 * 
-	 * @param sql the input SQL string
-	 * @throws java.sql.SQLException when update failed
-	 * */
-	public void executeUpdate (String sql) throws SQLException { 
-		// creates a statement object
-		Statement stmt = this._connection.createStatement ();
+  //reference to physical database connection
+  private Connection _connection = null;
+  static BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+  
+  public DBproject(String dbname, String dbport, String user, String passwd) throws SQLException {
+    System.out.print("Connecting to database...");
+    try{
+      // constructs the connection URL
+      String url = "jdbc:postgresql://localhost:" + dbport + "/" + dbname;
+      System.out.println ("Connection URL: " + url + "\n");
+      
+      // obtain a physical connection
+          this._connection = DriverManager.getConnection(url, user, passwd);
+          System.out.println("Done");
+    }catch(Exception e){
+      System.err.println("Error - Unable to Connect to Database: " + e.getMessage());
+          System.out.println("Make sure you started postgres on this machine");
+          System.exit(-1);
+    }
+  }
+  
+  /**
+   * Method to execute an update SQL statement.  Update SQL instructions
+   * includes CREATE, INSERT, UPDATE, DELETE, and DROP.
+   * 
+   * @param sql the input SQL string
+   * @throws java.sql.SQLException when update failed
+   * */
+  public void executeUpdate (String sql) throws SQLException { 
+    // creates a statement object
+    Statement stmt = this._connection.createStatement ();
 
-		// issues the update instruction
-		stmt.executeUpdate (sql);
+    // issues the update instruction
+    stmt.executeUpdate (sql);
 
-		// close the instruction
-	    stmt.close ();
-	}//end executeUpdate
+    // close the instruction
+      stmt.close ();
+  }//end executeUpdate
 
-	/**
-	 * Method to execute an input query SQL instruction (i.e. SELECT).  This
-	 * method issues the query to the DBMS and outputs the results to
-	 * standard out.
-	 * 
-	 * @param query the input query string
-	 * @return the number of rows returned
-	 * @throws java.sql.SQLException when failed to execute the query
-	 */
-	public int executeQueryAndPrintResult (String query) throws SQLException {
-		//creates a statement object
-		Statement stmt = this._connection.createStatement ();
+  /**
+   * Method to execute an input query SQL instruction (i.e. SELECT).  This
+   * method issues the query to the DBMS and outputs the results to
+   * standard out.
+   * 
+   * @param query the input query string
+   * @return the number of rows returned
+   * @throws java.sql.SQLException when failed to execute the query
+   */
+  public int executeQueryAndPrintResult (String query) throws SQLException {
+    //creates a statement object
+    Statement stmt = this._connection.createStatement ();
 
-		//issues the query instruction
-		ResultSet rs = stmt.executeQuery (query);
+    //issues the query instruction
+    ResultSet rs = stmt.executeQuery (query);
 
-		/*
-		 *  obtains the metadata object for the returned result set.  The metadata
-		 *  contains row and column info.
-		 */
-		ResultSetMetaData rsmd = rs.getMetaData ();
-		int numCol = rsmd.getColumnCount ();
-		int rowCount = 0;
-		
-		//iterates through the result set and output them to standard out.
-		boolean outputHeader = true;
-		while (rs.next()){
-			if(outputHeader){
-				for(int i = 1; i <= numCol; i++){
-					System.out.print(rsmd.getColumnName(i) + "\t");
-			    }
-			    System.out.println();
-			    outputHeader = false;
-			}
-			for (int i=1; i<=numCol; ++i)
-				System.out.print (rs.getString (i) + "\t");
-			System.out.println ();
-			++rowCount;
-		}//end while
-		stmt.close ();
-		return rowCount;
-	}
-	
-	/**
-	 * Method to execute an input query SQL instruction (i.e. SELECT).  This
-	 * method issues the query to the DBMS and returns the results as
-	 * a list of records. Each record in turn is a list of attribute values
-	 * 
-	 * @param query the input query string
-	 * @return the query result as a list of records
-	 * @throws java.sql.SQLException when failed to execute the query
-	 */
-	public List<List<String>> executeQueryAndReturnResult (String query) throws SQLException { 
-		//creates a statement object 
-		Statement stmt = this._connection.createStatement (); 
-		
-		//issues the query instruction 
-		ResultSet rs = stmt.executeQuery (query); 
-	 
-		/*
-		 * obtains the metadata object for the returned result set.  The metadata 
-		 * contains row and column info. 
-		*/ 
-		ResultSetMetaData rsmd = rs.getMetaData (); 
-		int numCol = rsmd.getColumnCount (); 
-		int rowCount = 0; 
-	 
-		//iterates through the result set and saves the data returned by the query. 
-		boolean outputHeader = false;
-		List<List<String>> result  = new ArrayList<List<String>>(); 
-		while (rs.next()){
-			List<String> record = new ArrayList<String>(); 
-			for (int i=1; i<=numCol; ++i) 
-				record.add(rs.getString (i)); 
-			result.add(record); 
-		}//end while 
-		stmt.close (); 
-		return result; 
-	}//end executeQueryAndReturnResult
-	
-	/**
-	 * Method to execute an input query SQL instruction (i.e. SELECT).  This
-	 * method issues the query to the DBMS and returns the number of results
-	 * 
-	 * @param query the input query string
-	 * @return the number of rows returned
-	 * @throws java.sql.SQLException when failed to execute the query
-	 */
-	public int executeQuery (String query) throws SQLException {
-		//creates a statement object
-		Statement stmt = this._connection.createStatement ();
+    /*
+     *  obtains the metadata object for the returned result set.  The metadata
+     *  contains row and column info.
+     */
+    ResultSetMetaData rsmd = rs.getMetaData ();
+    int numCol = rsmd.getColumnCount ();
+    int rowCount = 0;
+    
+    //iterates through the result set and output them to standard out.
+    boolean outputHeader = true;
+    while (rs.next()){
+      if(outputHeader){
+        for(int i = 1; i <= numCol; i++){
+          System.out.print(rsmd.getColumnName(i) + "\t");
+          }
+          System.out.println();
+          outputHeader = false;
+      }
+      for (int i=1; i<=numCol; ++i)
+        System.out.print (rs.getString (i) + "\t");
+      System.out.println ();
+      ++rowCount;
+    }//end while
+    stmt.close ();
+    return rowCount;
+  }
+  
+  /**
+   * Method to execute an input query SQL instruction (i.e. SELECT).  This
+   * method issues the query to the DBMS and returns the results as
+   * a list of records. Each record in turn is a list of attribute values
+   * 
+   * @param query the input query string
+   * @return the query result as a list of records
+   * @throws java.sql.SQLException when failed to execute the query
+   */
+  public List<List<String>> executeQueryAndReturnResult (String query) throws SQLException { 
+    //creates a statement object 
+    Statement stmt = this._connection.createStatement (); 
+    
+    //issues the query instruction 
+    ResultSet rs = stmt.executeQuery (query); 
+   
+    /*
+     * obtains the metadata object for the returned result set.  The metadata 
+     * contains row and column info. 
+    */ 
+    ResultSetMetaData rsmd = rs.getMetaData (); 
+    int numCol = rsmd.getColumnCount (); 
+    int rowCount = 0; 
+   
+    //iterates through the result set and saves the data returned by the query. 
+    boolean outputHeader = false;
+    List<List<String>> result  = new ArrayList<List<String>>(); 
+    while (rs.next()){
+      List<String> record = new ArrayList<String>(); 
+      for (int i=1; i<=numCol; ++i) 
+        record.add(rs.getString (i)); 
+      result.add(record); 
+    }//end while 
+    stmt.close (); 
+    return result; 
+  }//end executeQueryAndReturnResult
+  
+  /**
+   * Method to execute an input query SQL instruction (i.e. SELECT).  This
+   * method issues the query to the DBMS and returns the number of results
+   * 
+   * @param query the input query string
+   * @return the number of rows returned
+   * @throws java.sql.SQLException when failed to execute the query
+   */
+  public int executeQuery (String query) throws SQLException {
+    //creates a statement object
+    Statement stmt = this._connection.createStatement ();
 
-		//issues the query instruction
-		ResultSet rs = stmt.executeQuery (query);
+    //issues the query instruction
+    ResultSet rs = stmt.executeQuery (query);
 
-		int rowCount = 0;
+    int rowCount = 0;
 
-		//iterates through the result set and count nuber of results.
-		if(rs.next()){
-			rowCount++;
-		}//end while
-		stmt.close ();
-		return rowCount;
-	}
-	
-	/**
-	 * Method to fetch the last value from sequence. This
-	 * method issues the query to the DBMS and returns the current 
-	 * value of sequence used for autogenerated keys
-	 * 
-	 * @param sequence name of the DB sequence
-	 * @return current value of a sequence
-	 * @throws java.sql.SQLException when failed to execute the query
-	 */
-	
-	public int getCurrSeqVal(String sequence) throws SQLException {
-		Statement stmt = this._connection.createStatement ();
-		
-		ResultSet rs = stmt.executeQuery (String.format("Select currval('%s')", sequence));
-		if (rs.next()) return rs.getInt(1);
-		return -1;
-	}
+    //iterates through the result set and count nuber of results.
+    if(rs.next()){
+      rowCount++;
+    }//end while
+    stmt.close ();
+    return rowCount;
+  }
+  
+  /**
+   * Method to fetch the last value from sequence. This
+   * method issues the query to the DBMS and returns the current 
+   * value of sequence used for autogenerated keys
+   * 
+   * @param sequence name of the DB sequence
+   * @return current value of a sequence
+   * @throws java.sql.SQLException when failed to execute the query
+   */
+  
+  public int getCurrSeqVal(String sequence) throws SQLException {
+    Statement stmt = this._connection.createStatement ();
+    
+    ResultSet rs = stmt.executeQuery (String.format("Select currval('%s')", sequence));
+    if (rs.next()) return rs.getInt(1);
+    return -1;
+  }
 
-	/**
-	 * Method to close the physical connection if it is open.
-	 */
-	public void cleanup(){
-		try{
-			if (this._connection != null){
-				this._connection.close ();
-			}//end if
-		}catch (SQLException e){
-	         // ignored.
-		}//end try
-	}//end cleanup
+  /**
+   * Method to close the physical connection if it is open.
+   */
+  public void cleanup(){
+    try{
+      if (this._connection != null){
+        this._connection.close ();
+      }//end if
+    }catch (SQLException e){
+           // ignored.
+    }//end try
+  }//end cleanup
 
-	/**
-	 * The main execution method
-	 * 
-	 * @param args the command line arguments this inclues the <mysql|pgsql> <login file>
-	 */
-	public static void main (String[] args) {
-		if (args.length != 3) {
-			System.err.println (
-				"Usage: " + "java [-classpath <classpath>] " + DBproject.class.getName () +
-		            " <dbname> <port> <user>");
-			return;
-		}//end if
-		
-		DBproject esql = null;
-		
-		try{
-			System.out.println("(1)");
-			
-			try {
-				Class.forName("org.postgresql.Driver");
-			}catch(Exception e){
+  /**
+   * The main execution method
+   * 
+   * @param args the command line arguments this inclues the <mysql|pgsql> <login file>
+   */
+  public static void main (String[] args) {
+    if (args.length != 3) {
+      System.err.println (
+        "Usage: " + "java [-classpath <classpath>] " + DBproject.class.getName () +
+                " <dbname> <port> <user>");
+      return;
+    }//end if
+    
+    DBproject esql = null;
+    
+    try{
+      System.out.println("(1)");
+      
+      try {
+        Class.forName("org.postgresql.Driver");
+      }catch(Exception e){
 
-				System.out.println("Where is your PostgreSQL JDBC Driver? " + "Include in your library path!");
-				e.printStackTrace();
-				return;
-			}
-			
-			System.out.println("(2)");
-			String dbname = args[0];
-			String dbport = args[1];
-			String user = args[2];
-			
-			esql = new DBproject (dbname, dbport, user, "");
-			
-			boolean keepon = true;
-			while(keepon){
-				System.out.println("MAIN MENU");
-				System.out.println("---------");
-				System.out.println("1. Add Plane");
-				System.out.println("2. Add Pilot");
-				System.out.println("3. Add Flight");
-				System.out.println("4. Add Technician");
-				System.out.println("5. Book Flight");
-				System.out.println("6. List number of available seats for a given flight.");
-				System.out.println("7. List total number of repairs per plane in descending order");
-				System.out.println("8. List total number of repairs per year in ascending order");
-				System.out.println("9. Find total number of passengers with a given status");
-				System.out.println("10. < EXIT");
-				
-				switch (readChoice()){
-					case 1: AddPlane(esql); break;
-					case 2: AddPilot(esql); break;
-					case 3: AddFlight(esql); break;
-					case 4: AddTechnician(esql); break;
-					case 5: BookFlight(esql); break;
-					case 6: ListNumberOfAvailableSeats(esql); break;
-					case 7: ListsTotalNumberOfRepairsPerPlane(esql); break;
-					case 8: ListTotalNumberOfRepairsPerYear(esql); break;
-					case 9: FindPassengersCountWithStatus(esql); break;
-					case 10: keepon = false; break;
-				}
-			}
-		}catch(Exception e){
-			System.err.println (e.getMessage ());
-		}finally{
-			try{
-				if(esql != null) {
-					System.out.print("Disconnecting from database...");
-					esql.cleanup ();
-					System.out.println("Done\n\nBye !");
-				}//end if				
-			}catch(Exception e){
-				// ignored.
-			}
-		}
-	}
+        System.out.println("Where is your PostgreSQL JDBC Driver? " + "Include in your library path!");
+        e.printStackTrace();
+        return;
+      }
+      
+      System.out.println("(2)");
+      String dbname = args[0];
+      String dbport = args[1];
+      String user = args[2];
+      
+      esql = new DBproject (dbname, dbport, user, "");
+      
+      boolean keepon = true;
+      while(keepon){
+        System.out.println("MAIN MENU");
+        System.out.println("---------");
+        System.out.println("1. Add Plane");
+        System.out.println("2. Add Pilot");
+        System.out.println("3. Add Flight");
+        System.out.println("4. Add Technician");
+        System.out.println("5. Book Flight");
+        System.out.println("6. List number of available seats for a given flight.");
+        System.out.println("7. List total number of repairs per plane in descending order");
+        System.out.println("8. List total number of repairs per year in ascending order");
+        System.out.println("9. Find total number of passengers with a given status");
+        System.out.println("10. < EXIT");
+        
+        switch (readChoice()){
+          case 1: AddPlane(esql); break;
+          case 2: AddPilot(esql); break;
+          case 3: AddFlight(esql); break;
+          case 4: AddTechnician(esql); break;
+          case 5: BookFlight(esql); break;
+          case 6: ListNumberOfAvailableSeats(esql); break;
+          case 7: ListsTotalNumberOfRepairsPerPlane(esql); break;
+          case 8: ListTotalNumberOfRepairsPerYear(esql); break;
+          case 9: FindPassengersCountWithStatus(esql); break;
+          case 10: keepon = false; break;
+        }
+      }
+    }catch(Exception e){
+      System.err.println (e.getMessage ());
+    }finally{
+      try{
+        if(esql != null) {
+          System.out.print("Disconnecting from database...");
+          esql.cleanup ();
+          System.out.println("Done\n\nBye !");
+        }//end if       
+      }catch(Exception e){
+        // ignored.
+      }
+    }
+  }
 
-	public static int readChoice() {
-		int input;
-		// returns only if a correct value is given.
-		do {
-			System.out.print("Please make your choice: ");
-			try { // read the integer, parse it and break.
-				input = Integer.parseInt(in.readLine());
-				break;
-			}catch (Exception e) {
-				System.out.println("Your input is invalid!");
-				continue;
-			}//end try
-		}while (true);
-		return input;
-	}//end readChoice
+  public static int readChoice() {
+    int input;
+    // returns only if a correct value is given.
+    do {
+      System.out.print("Please make your choice: ");
+      try { // read the integer, parse it and break.
+        input = Integer.parseInt(in.readLine());
+        break;
+      }catch (Exception e) {
+        System.out.println("Your input is invalid!");
+        continue;
+      }//end try
+    }while (true);
+    return input;
+  }//end readChoice
 
-	public static void AddPlane(DBproject esql) {//1
+  public static void AddPlane(DBproject esql) {//1
     // Plane attributes
     String make;
     String model;
@@ -314,11 +314,11 @@ public class DBproject{
         // check length of input is 0 < input.length < 32
         if (make.length() <= 0 || make.length() > 32) {
           // throw exception
-          throw new RuntimeException("Number of characters must be between 1 to 32 characters!");
+          throw new RuntimeException("\n\t\t***Number of characters must be between 1 to 32 characters!***\n");
         }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -331,11 +331,11 @@ public class DBproject{
         // check length of input is 0 < input.length < 64
         if (model.length() <= 0 || model.length() > 64) {
           // throw exception
-          throw new RuntimeException("Number of characters must be between 1 to 64 characters!");
+          throw new RuntimeException("\n\t\t***Number of characters must be between 1 to 64 characters!***\n");
         }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -348,11 +348,14 @@ public class DBproject{
         // check length of input is 0 < input.length < 64
         if (age < 0) {
           // throw exception
-          throw new RuntimeException("Plane Age must be at least 0!");
+          throw new RuntimeException("\n\t\t***Plane Age must be at least 0!***\n");
         }
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -365,11 +368,14 @@ public class DBproject{
         // check length of input is 0 < input.length < 64
         if (seats <= 0 || seats > 499) {
           // throw exception
-          throw new RuntimeException("Number of seats must be between 1 to 499!");
+          throw new RuntimeException("\n\t\t***Number of seats must be between 1 to 499!***\n");
         }
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -378,19 +384,20 @@ public class DBproject{
     try {
       String query = "INSERT INTO Plane(make, model, age, seats) VALUES (" + "\'" + make + "\', \'" + model + "\', " + age + ", " + seats + ");";
       esql.executeUpdate(query);
+      System.out.println("\n\t\t***Successfully inserted plane!***\n");
     } catch (Exception e) {
       System.err.println (e.getMessage()); // lab6
     }
     
     try {
-      String query = "SELECT * FROM PLANE";
+      String query = "SELECT * FROM Plane P WHERE P.id = (SELECT MAX(id) FROM Plane);";
       esql.executeQueryAndPrintResult(query);
     } catch (Exception e) {
       System.err.println (e.getMessage()); // lab6
     }
-	}
+  }
 
-	public static void AddPilot(DBproject esql) {//2
+  public static void AddPilot(DBproject esql) {//2
     // pilot attributes
     String fullname;
     String nationality;
@@ -403,11 +410,16 @@ public class DBproject{
         // check length of input is 0 < input.length < 128
         if (fullname.length() <= 0 || fullname.length() > 128) {
           // throw exception
-          throw new RuntimeException("Number of characters must be between 1 to 128!");
+          throw new RuntimeException("\n\t\t***Number of characters must be between 1 to 128!***\n");
+        }
+        boolean allLetters = fullname.chars().allMatch(Character::isLetter);
+        if (!allLetters) {
+          // throw exception
+          throw new RuntimeException("\n\t\t***No numbers are allowed!***\n");
         }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -420,11 +432,16 @@ public class DBproject{
         // check length of input is 0 < input.length < 24
         if (nationality.length() <= 0 || nationality.length() > 24) {
           // throw exception
-          throw new RuntimeException("Number of characters must be between 1 to 24!");
+          throw new RuntimeException("\n\t\t***Number of characters must be between 1 to 24!***\n");
+        }
+        boolean allLetters = nationality.chars().allMatch(Character::isLetter);
+        if (!allLetters) {
+          // throw exception
+          throw new RuntimeException("\n\t\t***No numbers are allowed!***\n");
         }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -432,26 +449,27 @@ public class DBproject{
     // insert all attributes into pilot table
     try {
       String query = "INSERT INTO Pilot(fullname, nationality) VALUES (\'" + fullname + "\', \'" + nationality + "\');";
-	  esql.executeUpdate(query);
+      esql.executeUpdate(query);
+      System.out.println("\n\t\t***Successfully inserted pilot!***\n");
     } catch (Exception e) {
       System.err.println (e.getMessage()); // lab6
     }
     
     try {
-      String query = "SELECT * FROM Pilot";
+      String query = "SELECT * FROM Pilot P WHERE P.id = (SELECT MAX(id) FROM Pilot);";
       esql.executeQueryAndPrintResult(query);
     } catch (Exception e) {
       System.err.println (e.getMessage()); // lab6
     }
-	}
+  }
 
-	public static void AddFlight(DBproject esql) {//3
-		// Given a pilot, plane and flight, adds a flight in the DB
-		//FI: flightid, pilotid, planeid, all int
-		//flight: cost,num_sold,num_stops,act_dept_date,act_arr_date,arrive airport, dept airpot
-		int fid; //flightID
-		int pid; //pilotID
-		int Pid; //planeID
+  public static void AddFlight(DBproject esql) {//3
+    // Given a pilot, plane and flight, adds a flight in the DB
+    //FI: flightid, pilotid, planeid, all int
+    //flight: cost,num_sold,num_stops,act_dept_date,act_arr_date,arrive airport, dept airpot
+    int fid; //flightID
+    int pilotID;
+    int planeID;
     int cost;
     int sold;
     int stops;
@@ -459,13 +477,18 @@ public class DBproject{
     String aDate;
     String arr_airport;
     String dept_airport;
-	  do {
+    
+    // flight info
+    do {
       System.out.print("\tPlease input the flight id of the plane: ");
       try {
         fid = Integer.parseInt(in.readLine()); // prompt input from user
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -473,10 +496,13 @@ public class DBproject{
     do {
       System.out.print("\tPlease input the pilot id of the plane: ");
       try {
-        pid = Integer.parseInt(in.readLine()); // prompt input from user
+        pilotID = Integer.parseInt(in.readLine()); // prompt input from user
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -484,30 +510,43 @@ public class DBproject{
     do {
       System.out.print("\tPlease input the plane id of the plane: ");
       try {
-        Pid = Integer.parseInt(in.readLine()); // prompt input from user
+        planeID = Integer.parseInt(in.readLine()); // prompt input from user
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
     
-     try {
-      String query = "INSERT INTO FlightInfo(flight_id, pilot_id, plane_id) VALUES (" + fid + ", " + pid + ", " + Pid + ");";
+    try {
+      String query = "INSERT INTO FlightInfo(flight_id, pilot_id, plane_id) VALUES (" + fid + ", " + pilotID + ", " + planeID + ");";
+      esql.executeUpdate(query);
+      System.out.println("\n\t\t***Successfully inserted flight info!***\n");
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
+
+    try {
+      String query = "SELECT * FROM FlightInfo F WHERE F.fiid = (SELECT MAX(fiid) FROM FlightInfo);";
       esql.executeUpdate(query);
     } catch (Exception e) {
       System.err.println (e.getMessage());
     }
-    
-      
-    
+  
+    // flight 
     do {
       System.out.print("\tPlease input the flight cost: ");
       try {
         cost = Integer.parseInt(in.readLine()); // prompt input from user
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -517,8 +556,11 @@ public class DBproject{
       try {
         sold = Integer.parseInt(in.readLine()); // prompt input from user
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -528,8 +570,11 @@ public class DBproject{
       try {
         stops = Integer.parseInt(in.readLine()); // prompt input from user
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -540,7 +585,7 @@ public class DBproject{
         dDate = in.readLine(); // prompt input from user
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println ("\n\t\t***Please enter a valid date!***\n");
         continue;
       }
     } while (true);
@@ -551,29 +596,45 @@ public class DBproject{
         aDate = in.readLine(); // prompt input from user
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println ("\n\t\t***Please enter a valid date!***\n");
         continue;
       }
     } while (true);
     
     do {
-      System.out.print("\tPlease input the actual arrival airport: ");
+      System.out.print("\tPlease input the arrival airport: ");
       try {
         arr_airport = in.readLine(); // prompt input from user
+        if (arr_airport.length() <= 0 || arr_airport.length() > 5) {
+					throw new RuntimeException("\n\t\t***Airport must be between 1 to 5 characters!***\n");
+				}
+        boolean allLetters = arr_airport.chars().allMatch(Character::isLetter);
+        if (!allLetters) {
+          // throw exception
+          throw new RuntimeException("\n\t\t***No numbers are allowed!***\n");
+        }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
     
     do {
-      System.out.print("\tPlease input the actual departure airport: ");
+      System.out.print("\tPlease input the departure airport: ");
       try {
         dept_airport = in.readLine(); // prompt input from user
+        if (dept_airport.length() <= 0 || dept_airport.length() > 5) {
+					throw new RuntimeException("\n\t\t***Airport must be between 1 to 5 characters!***\n");
+				}
+        boolean allLetters = dept_airport.chars().allMatch(Character::isLetter);
+        if (!allLetters) {
+          // throw exception
+          throw new RuntimeException("\n\t\t***No numbers are allowed!***\n");
+        }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid Input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -581,13 +642,20 @@ public class DBproject{
     try {
       String query = "INSERT INTO Flight(cost, num_sold, num_stops, actual_departure_date, actual_arrival_date, arrival_airport, departure_airport) VALUES (" + cost + ", " + sold + ", " + stops + ", \'" + dDate + "\', \'" + aDate + "\', \'" + arr_airport + "\', \'" + dept_airport + "\');";
       esql.executeUpdate(query);
+      System.out.println("\n\t\t***Successfully inserted flight!***\n");
     } catch (Exception e) {
       System.err.println (e.getMessage());
     }
-  		
-	}
-	
-	public static void AddTechnician(DBproject esql) {//4
+    
+    try {
+      String query = "SELECT * FROM Flight F WHERE F.fnum = (SELECT MAX(fnum) FROM Flight);";
+      esql.executeUpdate(query);
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
+  }
+  
+  public static void AddTechnician(DBproject esql) {//4
     // technician attributes
     String full_name;
     
@@ -599,11 +667,16 @@ public class DBproject{
         // check length of input is 0 < input.length < 128
         if (full_name.length() <= 0 || full_name.length() > 128) {
           // throw exception
-          throw new RuntimeException("Number of characters must be between 1 to 128!");
+          throw new RuntimeException("\n\t\t***Number of characters must be between 1 to 128!***\n");
+        }
+        boolean allLetters = full_name.chars().allMatch(Character::isLetter);
+        if (!allLetters) {
+          // throw exception
+          throw new RuntimeException("\n\t\t***No numbers are allowed!***\n");
         }
         break;
       } catch (Exception e) {
-        System.out.println("Invalid input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -617,15 +690,15 @@ public class DBproject{
     }
     
     try {
-      String query = "SELECT * FROM Technician";
+      String query = "SELECT * FROM Technician T WHERE T.id = (SELECT MAX(id) FROM Technician);";
       esql.executeQueryAndPrintResult(query);
     } catch (Exception e) {
       System.err.println (e.getMessage()); // lab6
     }
-	}
+  }
 
-	public static void BookFlight(DBproject esql) {//5
-		// Given a customer and a flight that he/she wants to book, add a reservation to the DB
+  public static void BookFlight(DBproject esql) {//5
+    // Given a customer and a flight that he/she wants to book, add a reservation to the DB
     
     // get customer id
     int cus_id;
@@ -634,8 +707,11 @@ public class DBproject{
       try {
         cus_id = Integer.parseInt(in.readLine()); // convert string to int
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
@@ -647,25 +723,23 @@ public class DBproject{
       try {
         fid = Integer.parseInt(in.readLine()); // convert string to int
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
     
     // query the number of available seats
     try {
-      // gets the number of seats sold
-			String query1 = "SELECT F.num_sold " + 
-                     "FROM Flight F " + 
-                     "WHERE F.fnum = " + fid + ";";
-      
-      // total number of seats on the plane
-      String query2 = "SELECT P.seats " + 
-                     "FROM Plane P, FlightInfo FI, Flight F " + 
-                     "WHERE F.fnum = " + fid + " AND FI.flight_id = F.fnum AND P.id = FI.plane_id;";
-      // available seats
-      int availableSeats = Integer.parseInt(query2) - Integer.parseInt(query1);
+      String query = "SELECT (T.seat - T1.seat) AS available FROM (SELECT P.seats AS seat "
+                      + "FROM Plane P,FlightInfo FI, Flight F1 " +
+                      "WHERE F1.fnum = " + fid + " AND FI.flight_id = F1.fnum AND P.id = FI.plane_id) AS T,"
+                      + "(SELECT F2.num_sold as seat FROM Flight F2" +  " WHERE F2.fnum = " + fid + ") AS T1; ";
+      List<List<String>> result = esql.executeQueryAndReturnResult(query);
+      int availableSeats = Integer.parseInt(result.get(0).get(0));
       
       String status;
       if (availableSeats > 0) {
@@ -675,107 +749,122 @@ public class DBproject{
       }
       // rnum, cid, fid, status
       // somehow need to append to end of reservation list (todo)
-      String query = "INSERT INTO Reservation(cid, fid, status) VALUES (" + cus_id + ", " + fid + ", \'" + status + "\');";
-			esql.executeUpdate(query);
-      System.out.println("Successfully booked flight!");
-		} catch (Exception e) {
-			System.err.println (e.getMessage());
-		}
-	}
+      query = "INSERT INTO Reservation(cid, fid, status) VALUES (" + cus_id + ", " + fid + ", \'" + status + "\');";
+      esql.executeUpdate(query);
+      System.out.println("\n\t\t***Successfully booked flight!***\n");
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
 
-	public static void ListNumberOfAvailableSeats(DBproject esql) {//6
-		// For flight number and date, find the number of availalbe seats (i.e. total plane capacity minus booked seats )
+    try {
+      String query = "SELECT * FROM Reservation R WHERE R.rnum = (SELECT MAX(rnum) FROM Reservation);";
+      esql.executeQueryAndPrintResult(query);
+    } catch (Exception e) {
+      System.err.println (e.getMessage()); // lab6
+    }
+  }
+
+  public static void ListNumberOfAvailableSeats(DBproject esql) {//6
+    // For flight number and date, find the number of availalbe seats (i.e. total plane capacity minus booked seats )
     int fid;
+    
     do {
-      System.out.print("\tPlease input the flight ID: ");
+      System.out.print("\tPlease input a flight ID: ");
       try {
         fid = Integer.parseInt(in.readLine()); // convert string to int
         break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
       } catch (Exception e) {
-        System.out.println("Invalid input!");
+        System.err.println (e.getMessage());
         continue;
       }
     } while (true);
-     try {
-			String query = "SELECT (T.seat - T1.seat) AS available FROM (SELECT P.seats AS seat "
+    
+    try {
+      String query = "SELECT (T.seat - T1.seat) AS available FROM (SELECT P.seats AS seat "
                       + "FROM Plane P,FlightInfo FI, Flight F1 " +
                       "WHERE F1.fnum = " + fid + " AND FI.flight_id = F1.fnum AND P.id = FI.plane_id) AS T,"
                       + "(SELECT F2.num_sold as seat FROM Flight F2" +  " WHERE F2.fnum = " + fid + ") AS T1; ";
-			esql.executeQueryAndPrintResult(query); 
-		} catch (Exception e) {
-			System.err.println (e.getMessage());
-		}
-	}
+      esql.executeQueryAndPrintResult(query); 
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
+  }
 
-	public static void ListsTotalNumberOfRepairsPerPlane(DBproject esql) {//7
-		// Count number of repairs per planes and list them in descending order
+  public static void ListsTotalNumberOfRepairsPerPlane(DBproject esql) {//7
+    // Count number of repairs per planes and list them in descending order
     try {
-			String query = "SELECT R.plane_id, COUNT(R.rid)" + 
-                      "FROM Repairs R GROUP BY plane_id " +
-                    "ORDER BY count DESC;";
-			
-			esql.executeQueryAndPrintResult(query); 
-		} catch (Exception e) {
-			System.err.println (e.getMessage());
-		}
-	}
+      String query = "SELECT R.plane_id, COUNT(R.rid)" + 
+                     "FROM Repairs R GROUP BY plane_id " +
+                     "ORDER BY count DESC;";
+      
+      esql.executeQueryAndPrintResult(query); 
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
+  }
 
-	public static void ListTotalNumberOfRepairsPerYear(DBproject esql) {//8
-		// Count repairs per year and list them in ascending order
+  public static void ListTotalNumberOfRepairsPerYear(DBproject esql) {//8
+    // Count repairs per year and list them in ascending order
     try {
-			String query = "SELECT EXTRACT (year FROM R.repair_date) as \"Year\", count(R.rid) " + // keyword EXTRACT to extract from certain year
+      String query = "SELECT EXTRACT (year FROM R.repair_date) as \"Year\", count(R.rid) " + // keyword EXTRACT to extract from certain year
                      "FROM Repairs R " + 
                      "GROUP BY \"Year\" " + // group repairs by year
                      "ORDER BY count ASC;"; // list count in ascending order
-			
-			esql.executeQueryAndPrintResult(query); 
-		} catch (Exception e) {
-			System.err.println (e.getMessage());
-		}
-	}
-	
-	public static void FindPassengersCountWithStatus(DBproject esql) {//9
-		// Find how many passengers there are with a status (i.e. W,C,R) and list that number.
+      
+      esql.executeQueryAndPrintResult(query); 
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
+  }
+  
+  public static void FindPassengersCountWithStatus(DBproject esql) {//9
+    // Find how many passengers there are with a status (i.e. W,C,R) and list that number.
     
     // get fid from Reservation
     int fid;
     do {
-			System.out.print("\tPlease enter a flight Number: ");
-			try {
-				fid = Integer.parseInt(in.readLine());
-				break;
-			}catch (Exception e) {
-				System.out.println("Invalid input!");
-				continue;
-			}
-		} while (true);
+      System.out.print("\tPlease enter a flight number: ");
+      try {
+        fid = Integer.parseInt(in.readLine());
+        break;
+      } catch (NumberFormatException e) {
+        System.out.println("\n\t\t***Please input a number!***\n");
+        continue;
+      } catch (Exception e) {
+        System.err.println (e.getMessage());
+        continue;
+      }
+    } while (true);
     
     // get status from Reservation
     // if status not equals to "W", "C" or "R", throw new exception
     String status;
     do {
-			System.out.print("\tPlease enter a customer status: ");
-			try {
-				status = in.readLine();
+      System.out.print("\tPlease enter a customer status: ");
+      try {
+        status = in.readLine();
         if (!status.equals("W") && !status.equals("C") && !status.equals("R")) {
-          throw new RuntimeException("Please enter a valid status (W, C, R)!");
+          throw new RuntimeException("\n\t\t***Please enter a valid status (W, C, R)!***\n");
         }
-				break;
-			} catch (Exception e) {
-				System.out.println("Invalid Input!");
-				continue;
-			}
-		} while (true);
+        break;
+      } catch (Exception e) {
+        System.err.println (e.getMessage());
+        continue;
+      }
+    } while (true);
     
     // process the query   
     try {
-			String query = "SELECT COUNT(*) " + 
+      String query = "SELECT COUNT(*) " + 
                      "FROM Reservation R " + 
                      "WHERE fid = " + fid + " AND status = \'" + status + "\';"; // fid + status
-			
-			esql.executeQueryAndPrintResult(query);
-		} catch (Exception e) {
-			System.err.println (e.getMessage());
-		}
-	}
+      
+      esql.executeQueryAndPrintResult(query);
+    } catch (Exception e) {
+      System.err.println (e.getMessage());
+    }
+  }
 }
